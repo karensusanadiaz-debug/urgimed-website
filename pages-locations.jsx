@@ -28,7 +28,7 @@ const LocationsIndex = () => {
         );
       })}
       {shown.length === 0 && <section className="sec-tight"><div className="wrap"><div className="card" style={{ textAlign: 'center' }}>{en ? 'No clinic matches. Call us and we will find the closest one.' : 'Ninguna clínica coincide. Llámenos y encontraremos la más cercana.'} <a href={'tel:' + MAIN_PHONE.tel} style={{ fontWeight: 700 }}>{MAIN_PHONE.display}</a></div></div></section>}
-      <section className="sec"><div className="wrap"><SectionHead h={t('clinics_h')} /><ClinicMap /><AreasStrip /></div></section>
+      <section className="sec"><div className="wrap"><SectionHead h={t('clinics_h')} /><ClinicMap /></div></section>
       <section className="sec-tight"><div className="wrap"><RuleBox /></div></section>
       <AttorneyBand />
     </main>
@@ -116,6 +116,7 @@ const LocationPage = ({ slug }) => {
           <div className="card" style={{ display: 'grid', gap: 14, borderColor: 'var(--t4)' }}>
             <div className="eyebrow">{t('call_now')}</div>
             <a href={'tel:' + loc.tel} style={{ fontSize: '1.9rem', fontWeight: 900, color: 'var(--t6)', letterSpacing: '-.02em' }}>{loc.phone}</a>
+            {loc.email && <a href={'mailto:' + loc.email} style={{ color: 'var(--ink2)', fontWeight: 600, display: 'flex', gap: 8, alignItems: 'center', textTransform: 'lowercase' }}><I.mail s={16} /> {loc.email}</a>}
             <div style={{ color: 'var(--mute)', fontWeight: 700, display: 'flex', gap: 8, alignItems: 'center' }}><I.clock s={16} /> {L(HOURS, lang)}</div>
             <CallBtn loc={loc} className="btn btn-primary" />
             <BookBtn slug={loc.slug} className="btn btn-outline" />
@@ -139,7 +140,7 @@ const LocationPage = ({ slug }) => {
         <div className="grid g3">{nearby.map(n => <ClinicCard key={n.slug} loc={n} compact />)}</div>
       </div></section>
       <AttorneyBand />
-      <RelatedLinks title={lang === 'en' ? 'Related pages' : 'Páginas relacionadas'} groups={[[lang === 'en' ? 'Injuries we treat' : 'Lesiones que tratamos', INJURIES.map(i => ['/injuries/' + i.slug, L(i.name, lang)])], [lang === 'en' ? 'Other clinics' : 'Otras clínicas', LOCATIONS.filter(l => l.slug !== slug).map(l => ['/locations/' + l.slug, 'UrgiMed ' + L(l.label, lang)])], [lang === 'en' ? 'Areas we serve' : 'Zonas que atendemos', SERVICE_AREAS.map(a => ['/areas/' + a.slug, a.city])], [lang === 'en' ? 'Resources' : 'Recursos', [['/first-visit', t('nav_firstvisit')], ['/pip-insurance', t('nav_pip')], ['/faq', t('nav_faq')]]]]} />
+      <RelatedLinks title={lang === 'en' ? 'Related pages' : 'Páginas relacionadas'} groups={[[lang === 'en' ? 'Injuries we treat' : 'Lesiones que tratamos', INJURIES.map(i => ['/injuries/' + i.slug, L(i.name, lang)])], [lang === 'en' ? 'Other clinics' : 'Otras clínicas', LOCATIONS.filter(l => l.slug !== slug).map(l => ['/locations/' + l.slug, 'UrgiMed ' + L(l.label, lang)])], [lang === 'en' ? 'Resources' : 'Recursos', [['/first-visit', t('nav_firstvisit')], ['/pip-insurance', t('nav_pip')], ['/faq', t('nav_faq')]]]]} />
     </main>
   );
 };

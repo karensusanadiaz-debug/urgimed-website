@@ -15,9 +15,9 @@ const DoctorCard = ({ d }) => {
 };
 
 // Pin positions as % of the map image (1400×1250)
-const MAP_PINS = { 'kissimmee': [77.6, 42.8], 'davenport': [75.4, 44.9], 'winter-haven': [73.9, 46.9] };
+const MAP_PINS = { 'kissimmee': [77.6, 42.8], 'davenport': [75.4, 44.9], 'winter-haven': [73.9, 46.9], 'lakeland': [70.6, 46.2], 'tampa': [65.2, 49.2] };
 const MAP_LABEL_X = 50; // labels sit in the Gulf, west of the peninsula
-const MAP_LABEL_Y = { 'kissimmee': 28, 'davenport': 41, 'winter-haven': 54 };
+const MAP_LABEL_Y = { 'kissimmee': 22, 'davenport': 33, 'winter-haven': 44, 'lakeland': 55, 'tampa': 66 };
 
 const ClinicMap = () => {
   const { t, lang } = useLang();
@@ -44,6 +44,7 @@ const ClinicMap = () => {
         <Rating gbp={loc.gbp} />
         <p style={{ color: 'var(--ink2)' }}><I.pin s={14} /> {loc.street}<br />{loc.cityState}</p>
         <a href={'tel:' + loc.tel} style={{ fontSize: '1.3rem', fontWeight: 700, color: 'var(--t6)' }}>{loc.phone}</a>
+        {loc.email && <a href={'mailto:' + loc.email} style={{ color: 'var(--ink2)', fontWeight: 500, fontSize: '.9rem', textTransform: 'lowercase' }}>{loc.email}</a>}
         <div className="cta-row"><A to={'/locations/' + loc.slug} className="btn btn-primary btn-sm">{lang === 'en' ? 'Clinic page' : 'Ver clínica'}</A><a href={mapsUrl} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">{t('get_directions')}</a></div>
         <div className="cmap-list">{LOCATIONS.map(l => <button key={l.slug} className={active === l.slug ? 'on' : ''} onClick={() => setActive(l.slug)}>{L(l.label, lang)}</button>)}</div>
       </div>
@@ -90,7 +91,7 @@ const Home = () => {
         <div className="wrap banner-v3-in">
           <div className="cap">
             <h1 key={'h1' + run + lang} className="anim-title">{lang === 'en' ? <><Words text="Car Accident & Injury Clinics" /><b><Words text="Across Florida" from={5} /></b></> : <><Words text="Clínicas de Accidentes y Lesiones" /><b><Words text="en toda Florida" from={5} /></b></>}</h1>
-            <p key={'p' + run + lang} className="hv-sub">{lang === 'en' ? 'Same-day appointments at 3 Central Florida clinics. Board-certified physicians, X-ray on site, PIP billed directly. Se habla español.' : 'Citas el mismo día en 3 clínicas del centro de Florida. Médicos certificados, rayos X en sitio, facturamos al PIP directamente. Se habla español.'}</p>
+            <p key={'p' + run + lang} className="hv-sub">{lang === 'en' ? 'Same-day appointments at 5 clinics across Central Florida and Tampa Bay. Board-certified physicians, X-ray on site, PIP billed directly. Se habla español.' : 'Citas el mismo día en 5 clínicas en el centro de Florida y Tampa Bay. Médicos certificados, rayos X en sitio, facturamos al PIP directamente. Se habla español.'}</p>
             <div className="cta-row" style={{ gap: 12 }}>
               <BookBtn className="btn btn-primary btn-lg" />
               <a href={'tel:' + MAIN_PHONE.tel} className="btn btn-outline btn-lg hv-callbtn"><I.phone s={16} /> {MAIN_PHONE.display}</a>
@@ -131,7 +132,7 @@ const Home = () => {
         <div>
           <SectionHead center={false} h={t('about_more')} />
           <h3 style={{ fontSize: '1.5rem', marginBottom: 12 }}>Live Life Limitless</h3>
-          <p style={{ marginBottom: 24, fontSize: '1.02rem' }}>{lang === 'en' ? 'Florida’s multi-specialty group for accident and injury recovery. 3 Central Florida clinics. Board-certified physicians. Bilingual staff.' : 'El grupo multiespecialidad de Florida para la recuperación de accidentes y lesiones. 3 clínicas en el centro de Florida. Médicos certificados. Personal bilingüe.'}</p>
+          <p style={{ marginBottom: 24, fontSize: '1.02rem' }}>{lang === 'en' ? 'Florida’s multi-specialty group for accident and injury recovery. 5 clinics across Central Florida and Tampa Bay. Board-certified physicians. Bilingual staff.' : 'El grupo multiespecialidad de Florida para la recuperación de accidentes y lesiones. 3 clínicas en el centro de Florida. Médicos certificados. Personal bilingüe.'}</p>
           <A to="/about" className="btn btn-primary">{t('nav_about')}</A>
         </div>
       </div></section>
@@ -158,9 +159,9 @@ const Home = () => {
       </div></section>
 
       <section className="facts sec"><img className="bg" src="img/w-facade.jpg" alt="" /><div className="wrap">
-        <div><h2>{lang === 'en' ? <><b>3 clinics across Central Florida.</b> Same-day care.</> : <><b>3 clínicas en el centro de Florida.</b> Atención el mismo día.</>}</h2><A to="/locations" className="btn btn-outline-inv">{t('find_clinic')}</A></div>
+        <div><h2>{lang === 'en' ? <><b>5 clinics across Central Florida & Tampa Bay.</b> Same-day care.</> : <><b>5 clínicas en el centro de Florida y Tampa Bay.</b> Atención el mismo día.</>}</h2><A to="/locations" className="btn btn-outline-inv">{t('find_clinic')}</A></div>
         <div className="row">
-          <div><span className="icon-box inv" style={{ margin: '0 auto' }}><I.pin s={24} /></span><div className="n">3</div><p>{t('clinics_word')}</p></div>
+          <div><span className="icon-box inv" style={{ margin: '0 auto' }}><I.pin s={24} /></span><div className="n">5</div><p>{t('clinics_word')}</p></div>
           <div><span className="icon-box inv" style={{ margin: '0 auto' }}><I.user s={24} /></span><div className="n" style={{ fontSize: '1.6rem', lineHeight: 1.2, paddingTop: 10 }}>{lang === 'en' ? 'Board-certified' : 'Certificados'}</div><p>{lang === 'en' ? 'Physicians' : 'Médicos'}</p></div>
           <div><span className="icon-box inv" style={{ margin: '0 auto' }}><I.star s={24} /></span><div className="n">5.0</div><p>Google · Davenport</p></div>
         </div>
@@ -182,7 +183,6 @@ const Home = () => {
       <section className="sec" id="clinics"><div className="wrap">
         <SectionHead h={t('clinics_h')} sub={lang === 'en' ? 'Tap a pin for the address, phone and directions.' : 'Toque un pin para ver dirección, teléfono y cómo llegar.'} />
         <ClinicMap />
-        <AreasStrip />
       </div></section>
 
       <section className="sec"><div className="wrap">

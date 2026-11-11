@@ -56,13 +56,17 @@ const Rating = ({ gbp, inv }) => {
 
 // Lead delivery: FormSubmit (no backend). First submission triggers a one-time activation email to LEAD_TO.
 const LEAD_TO = 'info@urgimedical.com';
-const LEAD_CC = 'Urgimed.marketing@gmail.com,Deglogroup@gmail.com';
+const LEAD_CC = 'marketing@urgimedical.com,Deglogroup@gmail.com';
 const PAGE_LOADED_AT = Date.now();
 const sendLead = async (subject, fields) => {
   // Anti-bot: honeypot filled or submitted faster than a human could type (3 s) → drop silently
   if (fields && fields.website) return false;
   if (Date.now() - PAGE_LOADED_AT < 3000) return false;
-  const body = { ...fields, _subject: 'UrgiMed website — ' + subject, _cc: LEAD_CC, _template: 'table', _captcha: 'false', Page: location.href, Language: document.documentElement.lang || 'en', Submitted: new Date().toLocaleString() };
+  // Route a copy to the chosen clinic's inbox when the lead names one
+  const clinicKey = fields && (fields.Clinic || fields.clinic || '');
+  const clinic = clinicKey && LOCATIONS.find(l => l.slug === clinicKey || ('UrgiMed ' + l.city) === clinicKey || l.city === clinicKey || L(l.label, 'en') === clinicKey || L(l.label, 'es') === clinicKey || String(clinicKey).toLowerCase().includes(l.city.toLowerCase()));
+  const cc = clinic && clinic.email ? LEAD_CC + ',' + clinic.email : LEAD_CC;
+  const body = { ...fields, _subject: 'UrgiMed website — ' + subject, _cc: cc, _template: 'table', _captcha: 'false', Page: location.href, Language: document.documentElement.lang || 'en', Submitted: new Date().toLocaleString() };
   try { const r = await fetch('https://formsubmit.co/ajax/' + LEAD_TO, { method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify(body) }); return r.ok; } catch (e) { console.warn('lead not sent', e); return false; }
 };
 const Honeypot = () => <input type="text" name="website" tabIndex="-1" autoComplete="off" aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: 1, height: 1, opacity: 0 }} />;
@@ -98,6 +102,7 @@ const ClinicCard = ({ loc, compact }) => {
       </div>
       <div className="addr">{loc.street}<br />{loc.cityState}</div>
       <div className="tel"><I.phone s={14} /> {loc.phone}</div>
+      {loc.email && <div className="tel" style={{ fontWeight: 500, textTransform: 'lowercase' }}><I.mail s={14} /> <a href={'mailto:' + loc.email} style={{ color: 'inherit' }}>{loc.email}</a></div>}
       {!compact && <Rating gbp={loc.gbp} />}
       <div style={{ display: 'flex', gap: 6, marginTop: 2, color: 'var(--t6)', fontWeight: 600, fontSize: '.82rem', alignItems: 'center', textTransform: 'uppercase', letterSpacing: '.04em' }}>{t('same_day')} <I.arrow s={14} /></div>
     </A>
@@ -187,12 +192,12 @@ const Nav = ({ route, lang, setLang }) => {
   React.useEffect(() => setOpen(false), [route]);
   const car = <svg className="car" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m6 9 6 6 6-6"/></svg>;
   const menus = [
-    { to: '/locations', label: t('nav_locations'), wide: true, items: [...LOCATIONS.map(l => ['/locations/' + l.slug, L(l.label, lang)]), ...SERVICE_AREAS.map(a => ['/areas/' + a.slug, (lang === 'en' ? 'Serving ' : 'Atendemos ') + a.city])], all: ['/locations', t('all_locations')] },
+    { to: '/locations', label: t('nav_locations'), wide: true, items: LOCATIONS.map(l => ['/locations/' + l.slug, L(l.label, lang)]), all: ['/locations', t('all_locations')] },
     { to: '/injuries', label: t('nav_injuries'), items: INJURIES.map(i => ['/injuries/' + i.slug, L(i.name, lang)]), all: ['/injuries', t('all_injuries')] },
     { to: '/services', label: t('nav_services'), wide: true, items: SERVICES.map(s => ['/services/' + s.id, L(s, lang)]), all: ['/services', t('all_services')] },
     { to: '/doctors', label: t('nav_doctors'), items: DOCTORS.map(d => ['/doctors/' + d.id, d.name]), all: ['/doctors', t('back_to_doctors')] },
     { to: '/first-visit', label: t('nav_resources'), items: [['/first-visit', t('nav_firstvisit')], ['/pip-insurance', t('nav_pip')], ['/faq', t('nav_faq')], ['/blog', t('nav_blog')], ['/reviews', t('nav_reviews')], ['/patient-resources', t('nav_patient_resources')]], all: ['/about', t('nav_about')] },
-    { to: '/for-attorneys', label: t('nav_refer'), items: [['/for-attorneys', t('nav_attorneys')], ['/for-providers', t('nav_providers')]], all: ['https://urgimedical.com/referral', t('referral') + ' ↗'] },
+    { to: '/for-attorneys', label: t('nav_refer'), refer: true, items: [['/for-attorneys', t('nav_attorneys')], ['/for-providers', t('nav_providers')]], all: ['https://urgimedical.com/referral', t('referral') + ' ↗'] },
   ];
   const on = (m) => route.startsWith(m.to) || (m.items || []).some(([to]) => to.startsWith('/') && route.startsWith(to));
   const DDLink = ({ to, className, children }) => to.startsWith('http') ? <a href={to} target="_blank" rel="noreferrer" className={className}>{children}</a> : <A to={to} className={className}>{children}</A>;
@@ -210,7 +215,7 @@ const Nav = ({ route, lang, setLang }) => {
       <header className="header"><div className="wrap">
         <A to="/" aria-label="UrgiMed home"><img src="img/logo-horizontal.png" alt="UrgiMed — Live Life Limitless" style={{ height: 48, width: 'auto' }} /></A>
         <ul className="hnav" aria-label="Main">{menus.map(m => (
-          <li key={m.to}><A to={m.to} className={on(m) ? 'on' : ''} aria-haspopup={m.items ? 'true' : undefined}>{m.label}{m.items && car}</A>
+          <li key={m.to} className={m.refer ? 'refer' : ''}><A to={m.to} className={on(m) ? 'on' : ''} aria-haspopup={m.items ? 'true' : undefined}>{m.refer && <I.plus s={13} />}{m.label}{m.items && car}</A>
             {m.items && <div className={'dd' + (m.wide ? ' wide' : '')}>{m.items.map(([to, l]) => <A key={to} to={to} className={route === to ? 'on' : ''}>{l}<I.arrow s={12} /></A>)}<DDLink to={m.all[0]} className="all">{m.all[1]}<I.arrow s={12} /></DDLink></div>}
           </li>
         ))}</ul>
@@ -248,7 +253,7 @@ const Footer = () => {
         </div>
         <div><h4>{t('footer_injuries')}</h4><div style={{ display: 'grid', gap: 8 }}>{INJURIES.map(i => <A key={i.slug} to={'/injuries/' + i.slug}>{L(i.name, lang)}</A>)}</div></div>
         <div><h4>{t('nav_services')}</h4><div style={{ display: 'grid', gap: 8 }}>{SERVICES.slice(0, 6).map(s => <A key={s.id} to={'/services/' + s.id}>{L(s, lang)}</A>)}<A to="/services" style={{ color: 'var(--sage)', fontWeight: 600 }}>{t('all_services')} →</A></div></div>
-        <div><h4>{lang === 'en' ? 'Areas we serve' : 'Zonas que atendemos'}</h4><div style={{ display: 'grid', gap: 8 }}>{LOCATIONS.map(l => <A key={l.slug} to={'/locations/' + l.slug}>{l.city}</A>)}{SERVICE_AREAS.map(a => <A key={a.slug} to={'/areas/' + a.slug}>{a.city}</A>)}<A to="/areas" style={{ color: 'var(--sage)', fontWeight: 600 }}>{lang === 'en' ? 'All areas' : 'Todas las zonas'} →</A></div></div>
+        <div><h4>{t('footer_locations')}</h4><div style={{ display: 'grid', gap: 8 }}>{LOCATIONS.map(l => <A key={l.slug} to={'/locations/' + l.slug}>{L(l.label, lang)}</A>)}<A to="/locations" style={{ color: 'var(--sage)', fontWeight: 600 }}>{t('all_locations')} →</A></div></div>
         <div><h4>{t('nav_resources')}</h4><div style={{ display: 'grid', gap: 8 }}><A to="/about">{t('nav_about')}</A><A to="/first-visit">{t('nav_firstvisit')}</A><A to="/pip-insurance">{t('nav_pip')}</A><A to="/faq">{t('nav_faq')}</A><A to="/blog">{t('nav_blog')}</A><A to="/reviews">{t('nav_reviews')}</A><A to="/patient-resources">{t('nav_patient_resources')}</A></div></div>
         <div><h4>{lang === 'en' ? 'Quick links' : 'Enlaces rápidos'}</h4><div style={{ display: 'grid', gap: 8 }}><A to="/for-attorneys">{t('nav_attorneys')}</A><A to="/for-providers">{t('nav_providers')}</A><A to="/appointment">{t('book_appt')}</A><a href="https://urgimedical.com/referral" target="_blank" rel="noreferrer">{t('referral')}</a><a href="https://patient.urgimedical.com/" target="_blank" rel="noreferrer">{t('patient_login')}</a></div></div>
       </div>
@@ -294,7 +299,7 @@ const ClinicCTA = ({ h, sub }) => {
       <SectionHead h={h || t('injury_cta_h')} sub={sub || t('injury_cta_sub')} />
       <div className="grid g4">{LOCATIONS.map(l => (
         <A key={l.slug} to={'/locations/' + l.slug} className="card card-hover" style={{ borderRadius: 3, padding: '14px 16px', color: 'var(--ink)', display: 'flex', flexDirection: 'column', gap: 2, borderTop: '3px solid var(--sage)' }}>
-          <b style={{ fontSize: '.98rem' }}>{L(l.label, lang)}</b><span style={{ color: 'var(--t6)', fontWeight: 600, fontSize: '.92rem' }}>{l.phone}</span>
+          <b style={{ fontSize: '.98rem' }}>{L(l.label, lang)}</b><span style={{ color: 'var(--t6)', fontWeight: 600, fontSize: '.92rem' }}>{l.phone}</span>{l.email && <span style={{ color: 'var(--mute)', fontSize: '.82rem', textTransform: 'lowercase' }}>{l.email}</span>}
         </A>
       ))}</div>
     </div></section>
