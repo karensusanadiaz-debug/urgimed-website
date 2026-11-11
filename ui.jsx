@@ -55,8 +55,8 @@ const Rating = ({ gbp, inv }) => {
 };
 
 // Lead delivery: FormSubmit (no backend). First submission triggers a one-time activation email to LEAD_TO.
-const LEAD_TO = 'info@urgimedical.com';
-const LEAD_CC = 'marketing@urgimedical.com,Deglogroup@gmail.com';
+const LEAD_TO = 'marketing@urgimedical.com';
+const LEAD_CC = 'info@urgimedical.com,Deglogroup@gmail.com';
 const PAGE_LOADED_AT = Date.now();
 const sendLead = async (subject, fields) => {
   // Anti-bot: honeypot filled or submitted faster than a human could type (3 s) → drop silently
